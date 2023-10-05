@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Axios</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        h1 {
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        table,
+        th,
+        td {
+            border: 2px solid black;
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+        table {
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        th {
+            font-size: 1.5rem;
+        }
+
+        tbody tr:hover {
+            background-color: aqua;
+        }
+
+        button {
+            color: #fff;
+            background-color: red;
+            border: 1px solid #fff;
+            border-radius: 0.25rem;
+        }
+
+        button:hover {
+            color: red;
+            background-color: #fff;
+            border: 1px solid red;
+        }
+
+        select,
+        label {
+            font-size: large;
+            justify-content: space-between;
+            margin: 2rem 7.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Products</h1>
+    <div>
+        <div>
+            <label for="unitPrice">Unit Price'a gore filtrele : </label>
+
+            <select id="unitPrice" onclick="filterProduct(value)">
+                <option value="">Butun Urunler</option>
+                <option value="0,100">0 - 100</option>
+                <option value="100,200">100 - 200</option>
+                <option value="200,300">200 - 300</option>
+                <option value="300,400">300 - 400</option>
+            </select>
+        </div>
+        <table id="veri-tablosu">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Product Name</th>
+                    <th>Unit Price</th>
+                    <th>Unit in Stock</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+</body>
+<script>
+    let jsonData
+    let filteredData
+    function allProducts() {
+        axios.get('https://northwind.vercel.app/api/products')
+            .then((response) => {
+                jsonData = response.data;
+                const tbody = document.querySelector('#veri-tablosu tbody');
+                jsonData.forEach((data) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = ` 
+                    <td> ${data.id}</td>
+                    <td>${data.name}</td>
+                    <td>${data.unitPrice}</td>
+                    <td>${data.unitsInStock}</td>
+                    <td><button onclick="deleteProduct(${data.id})">X</button></td>
+                `;
+                    tbody.appendChild(row)
+                });
+            })
+            .catch((error) => {
+                console.error('Hata:', error);
+            });
+    }
+
+    allProducts()
+
+    function deleteProduct(productId) {
+        let answer = confirm('Urunu silmek istediginize emin misiniz?')
+
+        if (answer === true) {
+            jsonData = jsonData.filter((product) => product.id !== productId);
+
+            refreshTable(jsonData);
+
+            alert("Urun basariyla silindi.");
+        }
+    }
+
+    function filterProduct(value) {
+        if (value === '') {
+            refreshTable(jsonData)
+        } else {
+            let values = value.split(",");
+            filteredData = jsonData.filter((product) => Number(values[0]) <= Number(product.unitPrice) && product.unitPrice < Number(values[1]));
+            refreshTable(filteredData);
+        }
+    }
+
+    function refreshTable(a) {
+        const tbody = document.querySelector('#veri-tablosu tbody');
+        tbody.innerHTML = '';
+
+        a.forEach((data) => {
+            const row = document.createElement('tr');
+            row.innerHTML = ` 
+            <td>${data.id}</td>
+            <td>${data.name}</td>
+            <td>${data.unitPrice}</td>
+            <td>${data.unitsInStock}</td>
+            <td><button onclick="deleteProduct(${data.id})">X</button></td>
+        `;
+            tbody.appendChild(row);
+        });
+    }
+</script>
+
+</html>
